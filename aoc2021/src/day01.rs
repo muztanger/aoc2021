@@ -1,11 +1,24 @@
 use std::fs;
 use itertools::Itertools;
 
-pub fn day01a() -> String{
+pub fn day01part1() -> String{
     let values = read_data();
     
     let result = values.iter().combinations(2)
         .find(|v| v[0] + v[1] == 2020)
+        .map(|v | v.into_iter().product::<usize>());
+
+    match result {
+        Some(v) => v.to_string(),
+        None => "No result".to_string()
+    }
+}
+
+pub fn day01part2() -> String{
+    let values = read_data();
+    
+    let result = values.iter().combinations(3)
+        .find(|v| v[0] + v[1] + v[2]== 2020)
         .map(|v | v.into_iter().product::<usize>());
 
     match result {
