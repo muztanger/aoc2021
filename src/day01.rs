@@ -2,24 +2,6 @@ use std::fs;
 // use itertools::Itertools;
 
 pub fn day01part1() -> String {
-    return calculate(2);
-}
-
-pub fn day01part2() -> String{
-    return calculate(3);
-}
-
-#[test]
-fn day01part2_test() {
-    assert_eq!("203481432".to_string(), day01part2());
-}
-
-#[test]
-fn day01part1_test() {
-    assert_eq!("877971".to_string(), day01part1());
-}
-
-fn calculate(x: usize) -> String {
     let values = read_data();
     
     let mut x = 0;
@@ -33,7 +15,28 @@ fn calculate(x: usize) -> String {
     x.to_string()
 }
 
+pub fn day01part2() -> String {
+    let values = read_data();
+
+    let mut count = 0;
+    for i in 0..values.len() - 3 {
+        let x = values[i] + values[i + 1] + values[i + 2];
+        let y = values[i + 1] + values[i + 2] + values[i + 3];
+
+        if x < y {
+            count += 1;
+        }
+    }
+
+    count.to_string()
+}
+
 fn read_data() -> Vec<usize> {
     let values: String = fs::read_to_string("data/day01.txt").expect("Could not read file");
+    values.split('\n').filter_map(|s | s.parse::<usize>().ok()).collect()
+}
+
+fn _read_example() -> Vec<usize> {
+    let values: String = fs::read_to_string("data/day01_example.txt").expect("Could not read file");
     values.split('\n').filter_map(|s | s.parse::<usize>().ok()).collect()
 }
