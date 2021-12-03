@@ -85,6 +85,7 @@ fn _read_example() -> Vec<Command> {
 
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
+    #[cfg_attr(debug_assertions, allow(dead_code, unused_imports))]
     use super::*;
 
     #[test]

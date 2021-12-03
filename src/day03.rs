@@ -69,8 +69,10 @@ fn _read_example() -> Vec<String> {
     values.split('\n').filter_map(|s | s.parse::<String>().ok()).collect()
 }
 
+#[cfg(debug_assertions)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
+    #[cfg_attr(debug_assertions, allow(dead_code, unused_imports))]
     use super::*;
 
     #[test]
