@@ -1,20 +1,23 @@
 use std::fs;
-use std::str::FromStr;
 use std::fmt;
-
-struct Command {
-    command: String,
-    value: i64
-}
+use std::str::FromStr;
 
 struct CommandParseError;
 
 impl fmt::Display for CommandParseError {
-    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> { todo!() }
+    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> { 
+        // write!("(command={}, value={})")
+        todo!() 
+    }
 }
 
 impl fmt::Debug for CommandParseError {
     fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> { todo!() }
+}
+
+struct Command {
+    command: String,
+    value: i64
 }
 
 impl FromStr for Command {

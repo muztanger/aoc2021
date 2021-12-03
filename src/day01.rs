@@ -37,6 +37,6 @@ fn read_data() -> Vec<usize> {
 }
 
 fn _read_example() -> Vec<usize> {
-    let values: String = fs::read_to_string("data/day01_example.txt").expect("Could not read file");
+    let values: String = fs::read_to_string("data/day01.example").expect("Could not read file");
     values.split('\n').filter_map(|s | s.parse::<usize>().ok()).collect()
 }
