@@ -38,25 +38,50 @@ pub fn day2part1() -> i128 {
     gamma * epsilon
 }
 
-pub fn day2part2() -> i64 {
-    // let commands = read_data();
+pub fn day2part2() -> i128 {
+    let lines = read_data();
     
-    // let mut horizontal = 0;
-    // let mut depth = 0;
-    // let mut aim = 0;
+    let mut oxygen : Vec<String> = lines.clone().into_iter().filter(|x| x.len() > 0).collect();
+    let mut index = 0;
+    while oxygen.len() > 1 && index < oxygen.first().unwrap().len() {
+        let zeros = oxygen.clone().into_iter().filter(|o| o.chars().nth(index).unwrap() == '0').count();
+        let ones = oxygen.clone().into_iter().filter(|o| o.chars().nth(index).unwrap() == '1').count();
+        
+        // println!("zeros={} ones={}", zeros, ones);
+        oxygen = oxygen.into_iter().filter(|o|
+            (ones >= zeros && o.chars().nth(index).unwrap() == '1')
+            || (ones < zeros && o.chars().nth(index).unwrap() == '0') ).collect();
 
-    // for command in commands {
-    //     match command.command.as_str() {
-    //         "forward" => {horizontal += command.value; depth += aim * command.value},
-    //         "down" => {aim += command.value},
-    //         "up" => {aim -= command.value},
-    //         _ => {}
-    //     };
-    // }
+        // println!("oxygen index={}:", index);
+        // for x in oxygen.clone() {
+        //     println!("   {}", x);
+        // }
+        index += 1;
+    }
 
-    // println!("{} {}", horizontal, depth);
-    // horizontal * depth
-    0
+    let mut co2 : Vec<String> = lines.clone().into_iter().filter(|x| x.len() > 0).collect();
+    let mut index = 0;
+    while co2.len() > 1 && index < co2.first().unwrap().len() {
+        let zeros = co2.clone().into_iter().filter(|o| o.chars().nth(index).unwrap() == '0').count();
+        let ones = co2.clone().into_iter().filter(|o| o.chars().nth(index).unwrap() == '1').count();
+
+        // println!("zeros={} ones={}", zeros, ones);
+        co2 = co2.into_iter().filter(|o|
+            (ones < zeros && o.chars().nth(index).unwrap() == '1')
+            || (ones >= zeros && o.chars().nth(index).unwrap() == '0') ).collect();
+
+
+        // println!("co2 index={}:", index);
+        // for x in co2.clone() {
+        //     println!("   {}", x);
+        // }
+        index += 1;
+    }
+
+    let oxygen_dec = i128::from_str_radix(oxygen.first().unwrap(), 2).unwrap();
+    let co2_dec = i128::from_str_radix(co2.first().unwrap(), 2).unwrap();
+
+    oxygen_dec * co2_dec
 }
 
 fn read_data() -> Vec<String> {
@@ -82,6 +107,6 @@ mod tests {
 
     #[test]
     fn test_day2part2() {
-        assert_eq!(1604592846, day2part2());
+        assert_eq!(230, day2part2());
     }
 }
