@@ -78,10 +78,10 @@ pub fn day2part2() -> i128 {
         index += 1;
     }
 
-    let oxygen_dec = i128::from_str_radix(oxygen.first().unwrap(), 2).unwrap();
-    let co2_dec = i128::from_str_radix(co2.first().unwrap(), 2).unwrap();
+    let oxygen = i128::from_str_radix(oxygen.first().unwrap(), 2).unwrap();
+    let co2 = i128::from_str_radix(co2.first().unwrap(), 2).unwrap();
 
-    oxygen_dec * co2_dec
+    oxygen * co2
 }
 
 fn read_data() -> Vec<String> {
