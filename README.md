@@ -4,4 +4,4 @@ This year I am learning Rust and Github Codespaces at the same time as I am doin
 
 ## Thoughts
 
-After a couple of days I realized that I needed more Rust basics and did all the [Rustlings|https://github.com/rust-lang/rustlings] exercises. Really good way to get started. The experience of solving the Advent of Code problems are now much better. 😄
+After a couple of AoC problems I realized that I needed more Rust basics and did all the [Rustlings|https://github.com/rust-lang/rustlings] exercises. Really good way to get started. The experience Rust for this is now much better. 😄
