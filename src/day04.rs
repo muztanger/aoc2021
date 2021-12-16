@@ -2,18 +2,20 @@ use std::fs;
 use itertools::Itertools;
 use regex::Regex;
 
-// pub struct Mark
+pub struct Cell {
+    pub value: i32,
+    pub mark: bool
+}
 
 pub struct Board {
-    pub grid: Vec<Vec<i32>>,
-    pub mark: Vec<Vec<bool>>,
+    grid: Vec<Vec<Cell>>,
     has_won: bool
 }
 
 impl Board {
     pub fn add_row(&mut self, row: Vec<i32>) {
         assert_eq!(5, row.len());
-        self.grid.push(row);
+        self.grid.push(row.iter().map(|r| Cell{value:*r, mark:false}).collect());
     }
 
     pub fn len(&self) -> usize {
@@ -25,10 +27,10 @@ impl Board {
             return;
         }
 
-        for (j, row) in self.grid.iter().enumerate() {
-            for (i, cell) in row.iter().enumerate() {
-                if draw == *cell {
-                    self.mark[j][i] = true;
+        for row in 0..5 {
+            for col in 0..5 {
+                if draw == self.grid[row][col].value {
+                    self.grid[row][col].mark = true;
                 }
             }
         }
@@ -40,8 +42,8 @@ impl Board {
         }
 
         // Check rows
-        for row in &self.mark {
-            if row.iter().all(|x| *x) {
+        for row in &self.grid {
+            if row.iter().all(|x| x.mark) {
                 self.has_won = true;
                 return true;
             }
@@ -51,8 +53,7 @@ impl Board {
         for col in 0..5 {
             let mut result = true;
             for row in 0..5 {
-                let v: &Vec<bool> = &self.mark[row];
-                if v[col] == false{
+                if self.grid[row][col].mark == false{
                     result = false;
                     break;
                 }
@@ -69,8 +70,8 @@ impl Board {
         let mut score = 0;
         for j in 0..5 {
             for i in 0..5 {
-                if self.mark[j][i] == false {
-                    score += self.grid[j][i];
+                if self.grid[j][i].mark == false {
+                    score += self.grid[j][i].value;
                 }
             }
         }
@@ -79,7 +80,7 @@ impl Board {
 }
 
 pub fn create_board() -> Board {
-    Board{grid: Vec::new(), mark: vec![vec![false; 5]; 5], has_won: false}
+    Board{grid: Vec::new(), has_won: false}
 }
 
 pub fn create_boards(lines: Vec<String>) -> Vec<Board> {
@@ -182,6 +183,6 @@ mod tests {
 
     #[test]
     fn test_day4part2() {
-        assert_eq!(230, part2());
+        assert_eq!(19012, part2());
     }
 }
