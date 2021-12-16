@@ -53,6 +53,18 @@ impl Board {
         }
         false
     }
+
+    pub fn score(&self) -> i32 {
+        let mut score = 0;
+        for j in 0..5 {
+            for i in 0..5 {
+                if self.mark[j][i] == false {
+                    score += self.grid[j][i];
+                }
+            }
+        }
+        score
+    }
 }
 
 pub fn part1() -> i128 {
@@ -78,13 +90,25 @@ pub fn part1() -> i128 {
         }
     }
 
-    for (i, draw) in draws.iter().enumerate() {
+
+    let mut score: i32 = -1;
+    let mut last_draw: i32 = -1;
+    'outer: for (i, draw) in draws.iter().enumerate() {
         println!("Draw {}: {}", i + 1, draw);
 
+        for b in 0..boards.len() {
+            boards[b].draw(*draw);
+            if boards[b].is_winner() {
+                println!("Board {} is winner!", b);
+                score = boards[b].score();
+                last_draw = *draw;
+                break 'outer;
+            }
+        }
     }
 
-
-    boards.len() as i128
+    println!("score={}, score*draw={}", score, last_draw * score);
+    (score * last_draw) as i128
 }
 
 pub fn part2() -> i128 {
@@ -110,7 +134,7 @@ mod tests {
 
     #[test]
     fn test_day4part1() {
-        assert_eq!(3429254, part1());
+        assert_eq!(4512, part1());
     }
 
     #[test]
