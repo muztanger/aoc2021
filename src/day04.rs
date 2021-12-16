@@ -6,7 +6,8 @@ use regex::Regex;
 
 pub struct Board {
     pub grid: Vec<Vec<i32>>,
-    pub mark: Vec<Vec<bool>>
+    pub mark: Vec<Vec<bool>>,
+    has_won: bool
 }
 
 impl Board {
@@ -20,6 +21,10 @@ impl Board {
     }
 
     pub fn draw(&mut self, draw: i32) {
+        if self.has_won {
+            return;
+        }
+
         for (j, row) in self.grid.iter().enumerate() {
             for (i, cell) in row.iter().enumerate() {
                 if draw == *cell {
@@ -29,10 +34,15 @@ impl Board {
         }
     }
 
-    pub fn is_winner(&self) -> bool {
+    pub fn is_winner(&mut self) -> bool {
+        if self.has_won {
+            return true;
+        }
+
         // Check rows
         for row in &self.mark {
             if row.iter().all(|x| *x) {
+                self.has_won = true;
                 return true;
             }
         }
@@ -48,6 +58,7 @@ impl Board {
                 }
             }
             if result {
+                self.has_won = true;
                 return true;
             }
         }
@@ -67,12 +78,13 @@ impl Board {
     }
 }
 
-pub fn part1() -> i128 {
-    let lines = _read_example();
-    let draws : Vec<i32> = lines.first().unwrap().split(',').filter_map(|x| x.parse::<i32>().ok()).collect();
-    
+pub fn create_board() -> Board {
+    Board{grid: Vec::new(), mark: vec![vec![false; 5]; 5], has_won: false}
+}
+
+pub fn create_boards(lines: Vec<String>) -> Vec<Board> {
     let mut boards: Vec<Board> = Vec::new();
-    let mut board = Board{grid: Vec::new(), mark: vec![vec![false; 5]; 5]};
+    let mut board = create_board();
     let re = Regex::new(r"\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)").unwrap();
     for line in lines.iter().skip(1) {
         let caps = re.captures(line);
@@ -84,12 +96,20 @@ pub fn part1() -> i128 {
             None => {
                 if board.len() == 5 {
                     boards.push(board);
-                    board = Board{grid: Vec::new(), mark: vec![vec![false; 5]; 5]};
+                    board = create_board();
                 }
             }
         }
     }
 
+    boards
+}
+
+pub fn part1() -> i128 {
+    let lines = read_data();
+
+    let draws : Vec<i32> = lines.first().unwrap().split(',').filter_map(|x| x.parse::<i32>().ok()).collect();
+    let mut boards = create_boards(lines);
 
     let mut score: i32 = -1;
     let mut last_draw: i32 = -1;
@@ -112,8 +132,31 @@ pub fn part1() -> i128 {
 }
 
 pub fn part2() -> i128 {
-    let lines = _read_example();
-    1    
+    let lines = read_data();
+
+    let draws : Vec<i32> = lines.first().unwrap().split(',').filter_map(|x| x.parse::<i32>().ok()).collect();
+    let mut boards = create_boards(lines);
+
+    let mut score: i32 = -1;
+    let mut last_draw: i32 = -1;
+    for (i, draw) in draws.iter().enumerate() {
+        println!("Draw {}: {}", i + 1, draw);
+
+        for b in 0..boards.len() {
+            if boards[b].is_winner() {
+                continue;
+            }
+            boards[b].draw(*draw);
+            if boards[b].is_winner() {
+                println!("Board {} is winner!", b);
+                score = boards[b].score();
+                last_draw = *draw;
+            }
+        }
+    }
+
+    println!("score={}, score*draw={}", score, last_draw * score);
+    (score * last_draw) as i128
 }
 
 fn read_data() -> Vec<String> {
@@ -134,7 +177,7 @@ mod tests {
 
     #[test]
     fn test_day4part1() {
-        assert_eq!(4512, part1());
+        assert_eq!(21607, part1());
     }
 
     #[test]
