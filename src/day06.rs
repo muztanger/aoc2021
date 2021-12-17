@@ -1,10 +1,5 @@
-use itertools::Itertools;
-use regex::Regex;
-//use std::cmp;
 use std::collections::HashMap;
-use std::fmt;
 use std::fs;
-use std::ops;
 
 pub fn part1() -> i128 {
     let input = read_data();
