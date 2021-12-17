@@ -84,16 +84,11 @@ impl Line {
             return result;
         }
         
-        let dp = self.p1 - self.p2;
-        let step = -dp.signum();
+        let step = (self.p2 - self.p1).signum();
         let mut pos = self.p1.clone();
-
-        const MAX: i32 = 100;
-        let mut i = 0;
-        while pos != self.p2 && i < MAX {
+        while pos != self.p2 {
             result.push(pos.clone());
             pos += step;
-            i += 1;
         }
         result.push(pos.clone());
 
@@ -103,7 +98,7 @@ impl Line {
 
 
 pub fn part1() -> i128 {
-    let input = _read_example();
+    let input = read_data();
 
     let re = Regex::new(r"\s*(\d+),(\d+)[^\d]+(\d+),(\d+)").unwrap();
 
@@ -144,19 +139,19 @@ pub fn part1() -> i128 {
         max.x = cmp::max(max.x, cmp::max(line.p1.x, line.p2.x));
         max.y = cmp::max(max.y, cmp::max(line.p1.y, line.p2.y)); 
     }
-    for y in min.y .. max.y + 1 {
-        for x in min.x .. max.x + 1 {
-            let pos = Pos {x, y};
+    // for y in min.y .. max.y + 1 {
+    //     for x in min.x .. max.x + 1 {
+    //         let pos = Pos {x, y};
             
-            if count.contains_key(&pos) {
-                print!("{}", count.get(&pos).unwrap().to_string());
-            } else {
-                print!(".");
-            }
+    //         if count.contains_key(&pos) {
+    //             print!("{}", count.get(&pos).unwrap().to_string());
+    //         } else {
+    //             print!(".");
+    //         }
 
-        }
-        println!("");
-    }
+    //     }
+    //     println!("");
+    // }
 
     // println!("count: {}", count.iter().filter(|(_, v)| **v > 1).map(|(k, v)| format!("{}:{}", k.to_string(), v.to_string())).collect::<Vec<String>>().join(" "));
 
@@ -187,7 +182,7 @@ mod tests {
     fn test_day5part1() {
         let result = part1();
         assert_ne!(678, result);
-        assert_eq!(21607, result);
+        assert_eq!(6687, result);
     }
 
     #[test]
