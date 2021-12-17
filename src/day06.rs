@@ -6,7 +6,7 @@ use std::fs;
 use std::ops;
 
 pub fn part1() -> i128 {
-    let input = _read_example();
+    let input = read_data();
     let mut fish: Vec<i128> = input.first().unwrap().split(",").filter_map(|x| x.parse::<i128>().ok()).collect();
 
     //println!("Initial state: {}", fish.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(","));
@@ -53,7 +53,7 @@ mod tests {
 
     #[test]
     fn test_day6part1() {
-        assert_eq!(5934, part1());
+        assert_eq!(352872, part1());
     }
 
     #[test]
