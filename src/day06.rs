@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use regex::Regex;
 //use std::cmp;
 use std::collections::HashMap;
@@ -32,7 +33,39 @@ pub fn part1() -> i128 {
 }
 
 pub fn part2() -> i128 {
-   1
+    let input = read_data();
+    let fish_input: Vec<i128> = input.first().unwrap().split(",").filter_map(|x| x.parse::<i128>().ok()).collect();
+
+    let mut fish: HashMap<i128, i128> = HashMap::new();
+    for x in 0..10 {
+        fish.insert(x, 0);
+    }
+    for f in fish_input {
+        *fish.entry(f).or_insert(0) += 1;
+    }
+
+    // println!("Initial state: {}", fish.keys().sorted().map(|k| format!("{}:{}", k, fish.get(k).unwrap())).collect::<Vec<String>>().join(", "));
+
+    let mut n = 256;
+    while n != 0 {
+        let old_count = fish.get(&0).unwrap().clone();
+        let new_count = fish.entry(9).or_insert(0);
+        *new_count += old_count;
+
+        for key in 0..9 {
+            fish.insert(key, fish.get(&(key + 1)).unwrap().clone());
+        }
+
+        *fish.get_mut(&6).unwrap() += old_count;
+        *fish.get_mut(&9).unwrap() = 0;
+
+        // print!("After {} day: ", 19 - n);
+        // println!("{}", fish.keys().sorted().map(|k| format!("{}:{}", k, fish.get(k).unwrap())).collect::<Vec<String>>().join(", "));
+
+        n -= 1;
+    }
+    
+    fish.values().sum()
 }
 
 fn read_data() -> Vec<String> {
@@ -58,6 +91,6 @@ mod tests {
 
     #[test]
     fn test_day6part2() {
-        assert_eq!(19851, part2());
+        assert_eq!(1604361182149, part2());
     }
 }
