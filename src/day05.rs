@@ -1,5 +1,5 @@
 use regex::Regex;
-use std::cmp;
+//use std::cmp;
 use std::collections::HashMap;
 use std::fmt;
 use std::fs;
@@ -94,12 +94,30 @@ impl Line {
 
         result
     }
+
+    fn positions2(&self) -> Vec<Pos> {
+        let mut result = Vec::new();
+
+        let dt = self.p2 - self.p1;
+        if !(dt.x == 0 || dt.y == 0 || dt.x.abs() == dt.y.abs())
+        {
+            return result;
+        }
+
+        let step = dt.signum();
+        let mut pos = self.p1.clone();
+        while pos != self.p2 {
+            result.push(pos.clone());
+            pos += step;
+        }
+        result.push(pos.clone());
+
+        result
+    }
 }
 
 
-pub fn part1() -> i128 {
-    let input = read_data();
-
+fn parse_input(input: Vec<String>) -> Vec<Line> {
     let re = Regex::new(r"\s*(\d+),(\d+)[^\d]+(\d+),(\d+)").unwrap();
 
     let mut lines: Vec<Line> = Vec::new();
@@ -121,6 +139,25 @@ pub fn part1() -> i128 {
         }
     }
 
+    lines
+}
+
+// fn find_min_max(lines: Vec<Line>) -> (Pos, Pos) {
+//     let mut min = Pos{x:i32::MAX, y:i32::MAX};
+//     let mut max = Pos{x:i32::MIN, y:i32::MIN};
+//     for line in lines {
+//         min.x = cmp::min(min.x, cmp::min(line.p1.x, line.p2.x));
+//         min.y = cmp::min(min.y, cmp::min(line.p1.y, line.p2.y)); 
+//         max.x = cmp::max(max.x, cmp::max(line.p1.x, line.p2.x));
+//         max.y = cmp::max(max.y, cmp::max(line.p1.y, line.p2.y)); 
+//     }
+//     (min, max)
+// }
+
+pub fn part1() -> i128 {
+    let input = read_data();
+    let lines = parse_input(input);
+
     let mut count: HashMap<Pos, i32> = HashMap::new();
     for line in &lines {
         // println!("Line: {}", line);
@@ -131,14 +168,7 @@ pub fn part1() -> i128 {
         }
     }
 
-    let mut min = Pos{x:i32::MAX, y:i32::MAX};
-    let mut max = Pos{x:i32::MIN, y:i32::MIN};
-    for line in lines {
-        min.x = cmp::min(min.x, cmp::min(line.p1.x, line.p2.x));
-        min.y = cmp::min(min.y, cmp::min(line.p1.y, line.p2.y)); 
-        max.x = cmp::max(max.x, cmp::max(line.p1.x, line.p2.x));
-        max.y = cmp::max(max.y, cmp::max(line.p1.y, line.p2.y)); 
-    }
+    // let (min, max) = find_min_max(lines);
     // for y in min.y .. max.y + 1 {
     //     for x in min.x .. max.x + 1 {
     //         let pos = Pos {x, y};
@@ -159,7 +189,37 @@ pub fn part1() -> i128 {
 }
 
 pub fn part2() -> i128 {
-    1
+    let input = read_data();
+    let lines = parse_input(input);
+
+    let mut count: HashMap<Pos, i32> = HashMap::new();
+    for line in &lines {
+        // println!("Line: {}", line);
+        // println!("  Positions: [{}]", line.positions().iter().map(|x| x.to_string()).collect::<Vec<String>>().join(", "));
+        for p in line.positions2() {
+            let x = count.entry(p).or_insert(0);
+            *x += 1;
+        }
+    }
+
+    // let (min, max) = find_min_max(lines);
+    // for y in min.y .. max.y + 1 {
+    //     for x in min.x .. max.x + 1 {
+    //         let pos = Pos {x, y};
+            
+    //         if count.contains_key(&pos) {
+    //             print!("{}", count.get(&pos).unwrap().to_string());
+    //         } else {
+    //             print!(".");
+    //         }
+
+    //     }
+    //     println!("");
+    // }
+
+    // println!("count: {}", count.iter().filter(|(_, v)| **v > 1).map(|(k, v)| format!("{}:{}", k.to_string(), v.to_string())).collect::<Vec<String>>().join(" "));
+
+    count.iter().filter(|(_, value)| **value > 1).count() as i128
 }
 
 fn read_data() -> Vec<String> {
@@ -187,6 +247,6 @@ mod tests {
 
     #[test]
     fn test_day5part2() {
-        assert_eq!(19012, part2());
+        assert_eq!(19851, part2());
     }
 }
