@@ -20,8 +20,8 @@ fn dist(x: i128, y: i128) -> i128 {
     if x == y {
         0
     } else {
-
-        (0..((x-y).abs() + 1)).sum()
+        let n = (x-y).abs();
+        n * (n + 1) / 2
     }
 }
 
