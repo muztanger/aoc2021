@@ -1,5 +1,4 @@
 use std::fs;
-use itertools::Itertools;
 use regex::Regex;
 
 pub struct Cell {
