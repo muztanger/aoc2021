@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use std::fs;
-use std::collections::{HashMap,HashSet};
+use std::collections::HashMap;
 
 pub fn part1() -> i128 {
     let lines = read_data();
