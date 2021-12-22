@@ -17,7 +17,7 @@ pub fn part1() -> i128 {
 
 
 pub fn part2() -> i128 {
-    let lines = _read_example();
+    let lines = read_data();
     let mut count = 0;
     for line in lines.iter().filter(|x| x.len() > 0) {
         //println!("Line: {}", &line);
@@ -150,17 +150,13 @@ pub fn part2() -> i128 {
                 5 => {
                     //2, 3 or 5
                     if number.chars().contains(&code[1]) {
-                        // b->5
-                        x.push('2');
+                        x.push('5');
                     } else if number.chars().contains(&code[4]) {
-                        // e->2
-                        x.push('3');
+                        x.push('2');
                     }
                     else {
-                        x.push('5');
+                        x.push('3');
                     }
-                    // else 3
-
                 },
                 6 => {
                     //0, 6 or 9
@@ -181,7 +177,7 @@ pub fn part2() -> i128 {
             }
         }
         let x: i128 = x.iter().map(|c| c.to_string()).collect::<Vec<String>>().concat().parse::<i128>().unwrap();
-
+        // println!("x={}", x);
 
         //1, 4, 7, and 8
         //2, 4, 3, 7
@@ -213,6 +209,9 @@ mod tests {
 
     #[test]
     fn test_day8part2() {
-        assert_eq!(61229, part2());
+        let result = part2();
+        assert_ne!(944669, result); // is too low
+        assert!(result > 944669);
+        assert_eq!(946346, result);
     }
 }
