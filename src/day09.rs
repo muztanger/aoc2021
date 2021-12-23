@@ -2,9 +2,7 @@ use itertools::Itertools;
 use std::fs;
 use std::collections::HashMap;
 
-pub fn part1() -> i128 {
-    let lines = read_data();
-
+fn create_curve(lines: Vec<String>) -> Vec<Vec<i128>> {
     let width = lines.first().unwrap().len();
     let height = lines.len();
     let mut curve = vec![vec![0 as i128; width]; height];
@@ -15,12 +13,17 @@ pub fn part1() -> i128 {
             }
         }
     }
+    curve
+}
 
-    // let mut low_points: Vec<i128> = Vec::new();
-    let mut result = 0;
+fn find_low_points(curve: &Vec<Vec<i128>>) -> Vec<(usize, usize)> {
+    let mut low_points: Vec<(usize, usize)> = Vec::new();
+    let width = curve.first().unwrap().len();
+    let height = curve.len();
     for j in 0..height {
         for i in 0..width {
             let x = curve[j][i];
+
             let mut is_low = true;
             if i > 0 && curve[j][i - 1] <= x { is_low = false; } // left
             if i + 1 < width && curve[j][i + 1] <= x { is_low = false; } // right
@@ -29,16 +32,19 @@ pub fn part1() -> i128 {
             
             if is_low {
                 // println!("({},{})", i, j);
-                // low_points.push(x + 1);
-                result += x + 1;
+                low_points.push((i, j));
             }
         }
     }
-
-    // low_points.iter().sum::<i128>()
-    result
+    // println!("{}", low_points.iter().map(|x| format!("({},{})", x.0, x.1)).join(", ") );
+    low_points
 }
 
+pub fn part1() -> i128 {
+    let lines = read_data();
+    let curve = create_curve(lines);
+    find_low_points(&curve).iter().map(|(i, j)| curve[*j][*i]).fold(0, |x, acc|  x + 1 + acc)
+}
 
 pub fn part2() -> i128 {
     1 as i128
