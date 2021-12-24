@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use std::fs;
 use std::collections::HashMap;
 
@@ -23,18 +22,15 @@ pub fn part1() -> i128 {
     for line in lines {
         // println!("Line: {}", line);
         let mut stack = Vec::new();
-        for (i, c) in line.chars().enumerate() {
+        for c in line.chars() {
             match c {
                 '(' | '[' | '{' | '<' => {stack.push(c);},
                 ')' | ']' | '}' | '>' => {
                     if let Some(d) = stack.pop() {
                         let e = *map.get(&d).unwrap();
                         if c != e {
-                            // println!("No match at i={}. Expected {} got {}", i, e, c);
                             score += points.get(&c).unwrap();
                         }
-                    } else {
-                        // println!("No match at i={}", i);
                     }
                 },
                 _ => {
@@ -65,21 +61,17 @@ pub fn part2() -> i128 {
     let mut scores = Vec::new();
 
     'line: for line in lines {
-        // println!("Line: {}", line);
         let mut stack = Vec::new();
-        for (i, c) in line.chars().enumerate() {
+        for c in line.chars() {
             match c {
                 '(' | '[' | '{' | '<' => {stack.push(c);},
                 ')' | ']' | '}' | '>' => {
                     if let Some(d) = stack.pop() {
                         let e = *map.get(&d).unwrap();
                         if c != e {
-                            // println!("No match at i={}. Expected {} got {}", i, e, c);
-                            //score += points.get(&c).unwrap();
                             continue 'line;
                         }
                     } else {
-                        // println!("No match at i={}", i);
                         continue 'line;
                     }
                 },
