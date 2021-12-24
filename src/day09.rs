@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use std::fs;
-use std::collections::HashMap;
+use std::collections::HashSet;
 
 fn create_curve(lines: Vec<String>) -> Vec<Vec<i128>> {
     let width = lines.first().unwrap().len();
@@ -46,8 +46,49 @@ pub fn part1() -> i128 {
     find_low_points(&curve).iter().map(|(i, j)| curve[*j][*i]).fold(0, |x, acc|  x + 1 + acc)
 }
 
+pub fn search(area: &mut HashSet<(usize, usize)>, curve: &Vec<Vec<i128>>, point: &(usize, usize)) {
+    if let Some(_) = area.get(point) {
+        return;
+    }
+    
+    if curve[point.1][point.0] == 9 {
+        return;
+    }
+
+    area.insert(*point);
+
+    if point.0 > 0 {
+        search(area, curve, &(point.0 - 1, point.1));
+    }
+
+    if point.0 < curve.first().unwrap().len() - 1 {
+        search(area, curve, &(point.0 + 1, point.1))
+    }
+
+    if point.1 > 0 {
+        search(area, curve, &(point.0, point.1 - 1));
+    }
+
+    if point.1 < curve.len() - 1 {
+        search(area, curve, &(point.0, point.1 + 1));
+    }
+}
+
 pub fn part2() -> i128 {
-    1 as i128
+    let lines = read_data();
+    let curve = create_curve(lines);
+    let points = find_low_points(&curve);
+
+    let mut sizes: Vec<usize> = Vec::new();
+    for p in points {
+        let area = &mut HashSet::new();
+        search(area, &curve, &p);
+
+        // println!("Point=({},{}): Size={}", p.0, p.1, area.len());
+        sizes.push(area.len());
+    }
+    sizes.sort();
+    sizes.iter().skip(sizes.len() - 3).product::<usize>() as i128
 }
 
 fn read_data() -> Vec<String> {
@@ -76,8 +117,6 @@ mod tests {
     #[test]
     fn test_day9part2() {
         let result = part2();
-        assert_ne!(944669, result); // is too low
-        assert!(result > 944669);
-        assert_eq!(946346, result);
+        assert_eq!(1168440, result);
     }
 }
