@@ -48,7 +48,59 @@ pub fn part1() -> i128 {
 }
 
 pub fn part2() -> i128 {
-    1
+    let lines = read_data();
+
+    let mut map = HashMap::new();
+    map.insert('(', ')');
+    map.insert('[', ']');
+    map.insert('{', '}');
+    map.insert('<', '>');
+
+    let mut points = HashMap::new();
+    points.insert('(', 1);
+    points.insert('[', 2);
+    points.insert('{', 3);
+    points.insert('<', 4);
+
+    let mut scores = Vec::new();
+
+    'line: for line in lines {
+        // println!("Line: {}", line);
+        let mut stack = Vec::new();
+        for (i, c) in line.chars().enumerate() {
+            match c {
+                '(' | '[' | '{' | '<' => {stack.push(c);},
+                ')' | ']' | '}' | '>' => {
+                    if let Some(d) = stack.pop() {
+                        let e = *map.get(&d).unwrap();
+                        if c != e {
+                            // println!("No match at i={}. Expected {} got {}", i, e, c);
+                            //score += points.get(&c).unwrap();
+                            continue 'line;
+                        }
+                    } else {
+                        // println!("No match at i={}", i);
+                        continue 'line;
+                    }
+                },
+                _ => {
+
+                }
+            }
+        }
+
+        if stack.len() > 0 {
+            let mut stack_score = 0;
+            while let Some(c) = stack.pop() {
+                stack_score *= 5;
+                stack_score += points.get(&c).unwrap();
+            }
+            // println!("stack_score={}", stack_score);
+            scores.push(stack_score);
+        }
+    }
+    scores.sort();
+    scores[scores.len() / 2]
 }
 
 fn read_data() -> Vec<String> {
@@ -76,6 +128,6 @@ mod tests {
     #[test]
     fn test_day10part2() {
         let result = part2();
-        assert_eq!(1168440, result);
+        assert_eq!(3646451424, result);
     }
 }
