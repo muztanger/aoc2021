@@ -11,6 +11,10 @@ struct Octopuses {
 }
 
 impl Octopuses {
+    pub fn size(&mut self) -> i32 {
+        (self.octopuses.len() * self.octopuses[0].len()) as i32
+    }
+
     pub fn print(&mut self) {
         for j in 0..self.octopuses.len() {
             for i in 0..self.octopuses[0].len() {
@@ -119,7 +123,24 @@ pub fn part1() -> i128 {
 
 pub fn part2() -> i128 {
     let lines = read_data();
-    1
+    
+    let mut octopuses = create_octopuses(lines);
+    octopuses.print();
+    println!();
+
+    let mut step = 1;
+    loop {
+        octopuses.step();
+        octopuses.flash();
+        if octopuses.reset() == octopuses.size() {
+            break;
+        }
+
+        step += 1;
+        // println!("After step {}", step);
+        // octopuses.print();
+    }
+    step as i128
 }
 
 fn read_data() -> Vec<String> {
@@ -147,6 +168,6 @@ mod tests {
     #[test]
     fn test_day11part2() {
         let result = part2();
-        assert_eq!(3646451424, result);
+        assert_eq!(382, result);
     }
 }
