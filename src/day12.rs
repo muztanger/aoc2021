@@ -5,7 +5,7 @@ use std::hash::{Hash, Hasher};
 
 struct Cave {
     name: String,
-    neighbours: Vec<String>
+    neighbours: Vec<usize>
 }
 
 impl Cave {
@@ -13,10 +13,9 @@ impl Cave {
         Cave {name: name, neighbours: Vec::new()}
     }
 
-    pub fn add_neighbour(&mut self, other: String) {
+    pub fn add_neighbour(&mut self, other: usize) {
         if !self.neighbours.contains(&other) {
             self.neighbours.push(other);
-            self.neighbours.sort();
         }
     }
 }
@@ -82,26 +81,64 @@ impl Caves {
     fn add(&mut self, cave: &String) {
         if !self.caves.contains(&Cave::new(cave.clone())) {
             self.caves.push(Cave::new(cave.clone()));
-            self.caves.sort();
         }
     }
 
     fn add_neighbours(&mut self, cave1: &String, cave2: &String) {
         self.add(cave1);
+        let i1 = self.caves.iter().position(|x| x.name == *cave1).unwrap();
+
         self.add(cave2);
-        if let Some(i) = self.caves.iter().position(|x| x.name == *cave1) {
-            self.caves[i].add_neighbour(cave2.clone());
+        let i2 = self.caves.iter().position(|x| x.name == *cave2).unwrap();
+
+        self.caves[i1].add_neighbour(i2);
+        self.caves[i2].add_neighbour(i1);
+    }
+
+    fn find_path(caves: &Vec<Cave>, paths: &mut Vec<Vec<usize>>, path: &Vec<usize>, index: usize) {
+        // println!("caves: {}, paths: {}, path: {}, index: {}",
+        //     caves.len(),
+        //     paths.len(),
+        //     format!("[{}]",
+        //     path.iter().map(|&x| caves[x].name.clone()).collect::<Vec<String>>().join(",")),
+        //     caves[index].name.clone());
+
+        if path.iter().filter(|&&x| x == index).count() >= 1 && caves[index].name.chars().nth(0).unwrap().is_lowercase() {
+            // println!("End due to duplicate");
+            return;
         }
-        if let Some(i) = self.caves.iter().position(|x| x.name == *cave2) {
-            self.caves[i].add_neighbour(cave1.clone());
+
+        if caves[index].name == "end" {
+            // println!("End due to 'end'");
+            let mut result = path.clone();
+            result.push(index);
+            paths.push(result);
+            return;
         }
+
+        let mut path = path.clone();
+        path.push(index.clone());
+        for other in &caves[index].neighbours {
+            Caves::find_path(caves, paths, &path, other.clone());
+        }
+    }
+
+    fn find_paths(self) -> Vec<Vec<usize>> {
+        let mut paths: Vec<Vec<usize>> = Vec::new();
+        
+        let i = self.caves.iter().position(|x| x.name == "start").unwrap();
+        Caves::find_path(&self.caves, &mut paths, &vec![], i);
+
+        paths
     }
 }
 
 pub fn part1(lines: Vec<String>) -> i128 {
     let caves = Caves::create_caves(lines);
     println!("{}", caves);
-    1
+
+    let paths = caves.find_paths();
+    paths.len() as i128
 }
 
 pub fn part2() -> i128 {
@@ -109,7 +146,7 @@ pub fn part2() -> i128 {
 }
 
 fn read_data() -> Vec<String> {
-    let values: String = fs::read_to_string("data/day11.txt").expect("Could not read file");
+    let values: String = fs::read_to_string("data/day12.txt").expect("Could not read file");
     values.split('\n').filter_map(|s | s.parse::<String>().ok()).filter(|x| x.len() > 0).collect()
 }
 
@@ -127,21 +164,26 @@ mod tests {
     #[test]
     fn test_day12part1_example1() {
         let result = part1(_read_example(1));
-        assert_eq!(1585, result);
+        assert_eq!(10, result);
     }
 
     #[test]
     fn test_day12part1_example2() {
         let result = part1(_read_example(2));
-        assert_eq!(1585, result);
+        assert_eq!(19, result);
     }
 
     #[test]
     fn test_day12part1_example3() {
         let result = part1(_read_example(3));
-        assert_eq!(1585, result);
+        assert_eq!(226, result);
     }
 
+    #[test]
+    fn test_day12part1() {
+        let result = part1(read_data());
+        assert_eq!(226, result);
+    }
 
     #[test]
     fn test_day12part2() {
