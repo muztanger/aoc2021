@@ -1,5 +1,4 @@
 use std::fs;
-use std::collections::HashMap;
 
 struct Octopus {
     energy: i32,
@@ -110,7 +109,7 @@ pub fn part1() -> i128 {
     println!();
 
     let mut flashes = 0;
-    for step in 1..101 {
+    for _ in 1..101 {
         octopuses.step();
         octopuses.flash();
         flashes += octopuses.reset();
