@@ -2,6 +2,7 @@ use std::fmt;
 use std::fs;
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
+use std::collections::HashMap;
 
 struct Cave {
     name: String,
@@ -95,7 +96,7 @@ impl Caves {
         self.caves[i2].add_neighbour(i1);
     }
 
-    fn find_path(caves: &Vec<Cave>, paths: &mut Vec<Vec<usize>>, path: &Vec<usize>, index: usize) {
+    fn find_path(caves: &Vec<Cave>, paths: &mut Vec<Vec<usize>>, path: &Vec<usize>, index: usize, version: i32) {
         // println!("caves: {}, paths: {}, path: {}, index: {}",
         //     caves.len(),
         //     paths.len(),
@@ -103,9 +104,29 @@ impl Caves {
         //     path.iter().map(|&x| caves[x].name.clone()).collect::<Vec<String>>().join(",")),
         //     caves[index].name.clone());
 
-        if path.iter().filter(|&&x| x == index).count() >= 1 && caves[index].name.chars().nth(0).unwrap().is_lowercase() {
-            // println!("End due to duplicate");
-            return;
+        if version == 1
+            || caves[index].name.as_str() == "start"
+            || caves[index].name.as_str() == "end" {
+
+            if path.iter().filter(|&&x| x == index).count() >= 1 && caves[index].name.chars().nth(0).unwrap().is_lowercase() {
+                // println!("End due to duplicate");
+                return;
+            }
+        }
+
+        if version == 2 && path.len() > 0 {
+            let mut count_lowercase : HashMap<usize, usize> = HashMap::new();
+            for p in  path.iter().filter(|&&i| caves[i].name.chars().nth(0).unwrap().is_lowercase()) {
+                if let Some(x) = count_lowercase.get_mut(p) {
+                    *x += 1;
+                } else {
+                    count_lowercase.insert(*p, 1);
+                }
+            }
+            // println!("{:?}", count_lowercase);
+            if *count_lowercase.values().max().unwrap() > 2 || count_lowercase.values().filter(|&&x| x >= 2).count() >= 2 {
+                return;
+            }
         }
 
         if caves[index].name == "end" {
@@ -113,21 +134,28 @@ impl Caves {
             let mut result = path.clone();
             result.push(index);
             paths.push(result);
+
+            // println!("caves: {}, paths: {}, path: {}, index: {}",
+            //     caves.len(),
+            //     paths.len(),
+            //     format!("[{}]",
+            //     path.iter().map(|&x| caves[x].name.clone()).collect::<Vec<String>>().join(",")),
+            //     caves[index].name.clone());
             return;
         }
 
         let mut path = path.clone();
         path.push(index.clone());
         for other in &caves[index].neighbours {
-            Caves::find_path(caves, paths, &path, other.clone());
+            Caves::find_path(caves, paths, &path, other.clone(), version);
         }
     }
 
-    fn find_paths(self) -> Vec<Vec<usize>> {
+    fn find_paths(self, version: i32) -> Vec<Vec<usize>> {
         let mut paths: Vec<Vec<usize>> = Vec::new();
         
         let i = self.caves.iter().position(|x| x.name == "start").unwrap();
-        Caves::find_path(&self.caves, &mut paths, &vec![], i);
+        Caves::find_path(&self.caves, &mut paths, &vec![], i, version);
 
         paths
     }
@@ -137,12 +165,16 @@ pub fn part1(lines: Vec<String>) -> i128 {
     let caves = Caves::create_caves(lines);
     println!("{}", caves);
 
-    let paths = caves.find_paths();
+    let paths = caves.find_paths(1);
     paths.len() as i128
 }
 
-pub fn part2() -> i128 {
-    1
+pub fn part2(lines: Vec<String>) -> i128 {
+    let caves = Caves::create_caves(lines);
+    println!("{}", caves);
+
+    let paths = caves.find_paths(2);
+    paths.len() as i128
 }
 
 fn read_data() -> Vec<String> {
@@ -182,12 +214,18 @@ mod tests {
     #[test]
     fn test_day12part1() {
         let result = part1(read_data());
-        assert_eq!(226, result);
+        assert_eq!(4573, result);
+    }
+
+    #[test]
+    fn test_day12part2_example1() {
+        let result = part2(_read_example(1));
+        assert_eq!(36, result);
     }
 
     #[test]
     fn test_day12part2() {
-        let result = part2();
-        assert_eq!(382, result);
+        let result = part2(read_data());
+        assert_eq!(117509, result);
     }
 }
