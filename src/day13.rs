@@ -1,6 +1,5 @@
 use regex::Regex;
 use std::cmp;
-use std::collections::HashMap;
 use std::fs;
 use std::fmt;
 use std::ops;
@@ -202,20 +201,6 @@ pub fn calc(file: String, n: usize) -> i128 {
     println!("points: {}\n folds: {}", points.len(), folds.len());
 
     points.len() as i128
-}
-
-pub fn part2() -> i128 {
-    1
-}
-
-fn read_data(file: String) -> Vec<String> {
-    let values: String = fs::read_to_string(file).expect("Could not read file");
-    values.split('\n').filter_map(|s | s.parse::<String>().ok()).collect()
-}
-
-fn _read_example() -> Vec<String> {
-    let values: String = fs::read_to_string("data/day13.example").expect("Could not read file");
-    values.split('\n').filter_map(|s | s.parse::<String>().ok()).collect()
 }
 
 #[cfg(debug_assertions)]
