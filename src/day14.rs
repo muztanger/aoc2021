@@ -1,14 +1,6 @@
 use regex::Regex;
-use std::cmp;
 use std::collections::HashMap;
 use std::fs;
-use std::fmt;
-use std::ops;
-
-struct Rule {
-    pair: String,
-    replace: String 
-}
 
 pub fn get_next(template: &String, rules: &HashMap<String, String>) -> String {
     let mut next: Vec<String> = vec![template.chars().take(1).collect::<String>()];
@@ -19,7 +11,83 @@ pub fn get_next(template: &String, rules: &HashMap<String, String>) -> String {
     next.concat()
 }
 
-pub fn calc(file: String, n: usize) -> i128 {
+struct PolymerCounter {
+    rules: HashMap<String, String>,
+    mem: HashMap<(String, i128), HashMap<char, i128>>
+}
+
+impl PolymerCounter {
+    pub fn count(&mut self, template: &String, n: i128) -> HashMap<char, i128> {
+        println!("Template: {} n: {}", template, n);
+        if self.mem.contains_key(&(template.clone(), n)) {
+            return self.mem.get(&(template.clone(), n)).unwrap().clone();
+        }
+
+        if n == 0 {
+            let mut result: HashMap<char, i128> = HashMap::new();
+            for c in template.chars() {
+                if !result.contains_key(&c) {
+                    result.insert(c, 1);
+                } else {
+                    if let Some(x) = result.get_mut(&c) {
+                        *x += 1;
+                    }
+                }
+            }
+            self.mem.insert((template.clone(), n), result.clone());
+            println!("Template: {} n: {} Result: {:?}", template, n, result);
+            return result;
+        }
+
+        match template.len() {
+            0 => HashMap::new(),
+            1 => {
+                let mut result = HashMap::new();
+                result.insert(template.chars().next().unwrap(), 1);
+                println!("Template: {} n: {} Result: {:?}", template, n, result);
+                return result;
+            },
+            2 => {
+                // if n == 0 {
+                //     let mut result = HashMap::new();
+                //     result.insert(template.chars().nth(0).unwrap(), 1);
+                //     result.insert(template.chars().nth(1).unwrap(), 1);
+                //     self.mem.insert((template.clone(), n), result.clone());
+                //     println!("Template: {} n: {} Result: {:?}", template, n, result);
+                //     return result;
+                // } else {
+                    let result = self.count(&format!("{}{}{}", template.chars().nth(0).unwrap(), self.rules.get(template).unwrap(), template.chars().nth(1).unwrap()), n - 1);
+                    println!("Template: {} n: {} Result: {:?}", template, n, result);
+                    return result;
+                // }
+            },
+            _ => {
+                let mut result = self.count(&template.chars().take(2).collect::<String>(), n);
+
+                let rest = self.count(&template.chars().skip(1).collect::<String>(), n);
+                for k in rest.keys() {
+                    if result.contains_key(k) {
+                        let x = result.get_mut(k).unwrap();
+                        *x += rest.get(&k).unwrap();
+                    } else {
+                        result.insert(*k, *rest.get(&k).unwrap());
+                    }
+                }
+
+                let c = template.chars().nth(1).unwrap();
+                let x = result.get_mut(&c).unwrap();
+                *x -= 1;
+
+                self.mem.insert((template.clone(), n), result.clone());
+
+                println!("Template: {} n: {} Result: {:?}", template, n, result);
+                return result;
+            }
+        }
+    }
+}
+
+pub fn problem(file: String, n: usize) -> i128 {
     let lines: Vec<String> = fs::read_to_string(file).expect("Could not read file").split('\n').filter_map(|s | s.parse::<String>().ok()).collect();
     let polymer_template = lines.first().unwrap();
     println!("Template: {}", polymer_template);
@@ -33,23 +101,25 @@ pub fn calc(file: String, n: usize) -> i128 {
     }
 
     println!("Rules: {:?}", rules);
+    let mut counter = PolymerCounter{rules: rules, mem: HashMap::new()};
+    let count: HashMap<char, i128> = counter.count(polymer_template, n as i128);
 
-    let mut next = polymer_template.clone();
-    for _ in 0..10 {
-        next = get_next(&next, &rules);
-        //println!("Next: {:?}", next);
-    }
+    // let mut next = polymer_template.clone();
+    // for _ in 0..n {
+    //     next = get_next(&next, &rules);
+    //     //println!("Next: {:?}", next);
+    // }
 
-    let mut count: HashMap<char, i128> = HashMap::new();
-    for c in next.chars() {
-        if !count.contains_key(&c) {
-            count.insert(c, 1);
-        } else {
-            if let Some(x) = count.get_mut(&c) {
-                *x += 1;
-            }
-        }
-    }
+    // let mut count: HashMap<char, i128> = HashMap::new();
+    // for c in next.chars() {
+    //     if !count.contains_key(&c) {
+    //         count.insert(c, 1);
+    //     } else {
+    //         if let Some(x) = count.get_mut(&c) {
+    //             *x += 1;
+    //         }
+    //     }
+    // }
 
     println!("{:?}", count);
 
@@ -64,19 +134,18 @@ mod tests {
 
     #[test]
     fn test_day14_part1_example() {
-        let result = calc("data/day14.example".to_string(), 1);
+        let result = problem("data/day14.example".to_string(), 10);
         assert_eq!(1588, result);
     }
 
     #[test]
     fn test_day14_part1() {
-        let result = calc("data/day14.txt".to_string(), 1);
-        assert_eq!(781, result);
+        let result = problem("data/day14.txt".to_string(), 10);
+        assert_eq!(2915, result);
     }
-
 
     #[test]
     fn test_day14_part2() {
-        calc("data/day14.txt".to_string(), 12);
+        assert_eq!(3353146900153, problem("data/day14.txt".to_string(), 40));
     }
 }
