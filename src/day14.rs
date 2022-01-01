@@ -18,7 +18,7 @@ struct PolymerCounter {
 
 impl PolymerCounter {
     pub fn count(&mut self, template: &String, n: i128) -> HashMap<char, i128> {
-        println!("Template: {} n: {}", template, n);
+        // println!("Template: {} n: {}", template, n);
         if self.mem.contains_key(&(template.clone(), n)) {
             return self.mem.get(&(template.clone(), n)).unwrap().clone();
         }
@@ -48,18 +48,9 @@ impl PolymerCounter {
                 return result;
             },
             2 => {
-                // if n == 0 {
-                //     let mut result = HashMap::new();
-                //     result.insert(template.chars().nth(0).unwrap(), 1);
-                //     result.insert(template.chars().nth(1).unwrap(), 1);
-                //     self.mem.insert((template.clone(), n), result.clone());
-                //     println!("Template: {} n: {} Result: {:?}", template, n, result);
-                //     return result;
-                // } else {
-                    let result = self.count(&format!("{}{}{}", template.chars().nth(0).unwrap(), self.rules.get(template).unwrap(), template.chars().nth(1).unwrap()), n - 1);
-                    println!("Template: {} n: {} Result: {:?}", template, n, result);
-                    return result;
-                // }
+                let result = self.count(&format!("{}{}{}", template.chars().nth(0).unwrap(), self.rules.get(template).unwrap(), template.chars().nth(1).unwrap()), n - 1);
+                println!("Template: {} n: {} Result: {:?}", template, n, result);
+                return result;
             },
             _ => {
                 let mut result = self.count(&template.chars().take(2).collect::<String>(), n);
@@ -103,23 +94,6 @@ pub fn problem(file: String, n: usize) -> i128 {
     println!("Rules: {:?}", rules);
     let mut counter = PolymerCounter{rules: rules, mem: HashMap::new()};
     let count: HashMap<char, i128> = counter.count(polymer_template, n as i128);
-
-    // let mut next = polymer_template.clone();
-    // for _ in 0..n {
-    //     next = get_next(&next, &rules);
-    //     //println!("Next: {:?}", next);
-    // }
-
-    // let mut count: HashMap<char, i128> = HashMap::new();
-    // for c in next.chars() {
-    //     if !count.contains_key(&c) {
-    //         count.insert(c, 1);
-    //     } else {
-    //         if let Some(x) = count.get_mut(&c) {
-    //             *x += 1;
-    //         }
-    //     }
-    // }
 
     println!("{:?}", count);
 
