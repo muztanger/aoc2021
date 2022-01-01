@@ -55,15 +55,6 @@ impl std::ops::Neg for Pos {
     }
 }
 
-impl Pos {
-    fn signum(&self) -> Pos {
-        Pos {
-            x: self.x.signum(), 
-            y: self.y.signum()
-        }
-    }
-}
-
 struct Poss {
     poss: Vec<Pos>,
     x_min: i128,

@@ -2,15 +2,6 @@ use regex::Regex;
 use std::collections::HashMap;
 use std::fs;
 
-pub fn get_next(template: &String, rules: &HashMap<String, String>) -> String {
-    let mut next: Vec<String> = vec![template.chars().take(1).collect::<String>()];
-    for r in template.chars().zip(template.chars().skip(1)).map(
-        |(a, b)| format!("{}{}", rules.get(&format!("{}{}", a, b)).unwrap(), b)) {
-            next.push(r);
-    }
-    next.concat()
-}
-
 struct PolymerCounter {
     rules: HashMap<String, String>,
     mem: HashMap<(String, i128), HashMap<char, i128>>
@@ -35,7 +26,7 @@ impl PolymerCounter {
                 }
             }
             self.mem.insert((template.clone(), n), result.clone());
-            println!("Template: {} n: {} Result: {:?}", template, n, result);
+            // println!("Template: {} n: {} Result: {:?}", template, n, result);
             return result;
         }
 
@@ -44,12 +35,12 @@ impl PolymerCounter {
             1 => {
                 let mut result = HashMap::new();
                 result.insert(template.chars().next().unwrap(), 1);
-                println!("Template: {} n: {} Result: {:?}", template, n, result);
+                // println!("Template: {} n: {} Result: {:?}", template, n, result);
                 return result;
             },
             2 => {
                 let result = self.count(&format!("{}{}{}", template.chars().nth(0).unwrap(), self.rules.get(template).unwrap(), template.chars().nth(1).unwrap()), n - 1);
-                println!("Template: {} n: {} Result: {:?}", template, n, result);
+                // println!("Template: {} n: {} Result: {:?}", template, n, result);
                 return result;
             },
             _ => {
@@ -71,7 +62,7 @@ impl PolymerCounter {
 
                 self.mem.insert((template.clone(), n), result.clone());
 
-                println!("Template: {} n: {} Result: {:?}", template, n, result);
+                // println!("Template: {} n: {} Result: {:?}", template, n, result);
                 return result;
             }
         }
