@@ -177,6 +177,11 @@ pub fn part2(lines: Vec<String>) -> i128 {
     paths.len() as i128
 }
 
+fn _read_data() -> Vec<String> {
+    let values: String = fs::read_to_string("data/day12.txt").expect("Could not read file");
+    values.split('\n').filter_map(|s | s.parse::<String>().ok()).filter(|x| x.len() > 0).collect()
+}
+
 fn _read_example(num: i32) -> Vec<String> {
     let values: String = fs::read_to_string(format!("data/day12.example{}", num)).expect("Could not read file");
     values.split('\n').filter_map(|s | s.parse::<String>().ok()).filter(|x| x.len() > 0).collect()
@@ -208,7 +213,7 @@ mod tests {
 
     #[test]
     fn test_day12part1() {
-        let result = part1(read_data());
+        let result = part1(_read_data());
         assert_eq!(4573, result);
     }
 
@@ -220,7 +225,7 @@ mod tests {
 
     #[test]
     fn test_day12part2() {
-        let result = part2(read_data());
+        let result = part2(_read_data());
         assert_eq!(117509, result);
     }
 }

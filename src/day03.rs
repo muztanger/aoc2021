@@ -107,6 +107,6 @@ mod tests {
 
     #[test]
     fn test_day2part2() {
-        assert_eq!(230, day2part2());
+        assert_eq!(5410338, day2part2());
     }
 }
