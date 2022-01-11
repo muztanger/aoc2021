@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::collections::BinaryHeap;
 use std::cmp::Ordering;
 use std::fs;
@@ -56,14 +55,14 @@ impl std::ops::Neg for Pos {
     }
 }
 
-impl Pos {
-    fn signum(&self) -> Pos {
-        Pos {
-            x: self.x.signum(), 
-            y: self.y.signum()
-        }
-    }
-}
+// impl Pos {
+//     fn signum(&self) -> Pos {
+//         Pos {
+//             x: self.x.signum(), 
+//             y: self.y.signum()
+//         }
+//     }
+// }
 
 impl Ord for Pos {
     fn cmp(&self, other: &Self) -> Ordering {
@@ -77,42 +76,35 @@ impl PartialOrd for Pos {
     }
 }
 
-
 struct Cavern {
     cavern: Vec<Vec<i32>>,
-    start: Pos,
     end: Pos,
-    left: Pos,
-    right: Pos,
-    up: Pos,
-    down: Pos,
-    mem: HashMap<Pos, i32>
 }
 
 impl Cavern {
-    pub fn new(lines: Vec<String>) -> Self {
+    pub fn new(lines: Vec<String>, n: usize) -> Self {
         let cavern: Vec<Vec<i32>> = lines.iter().filter(|line| line.len() > 0).map(|line| line.chars().map(|x| x.to_digit(10).unwrap() as i32).collect::<Vec<i32>>()).collect();
-        let width = cavern[0].len() as i32 - 1;
-        let height = cavern.len() as i32 - 1;
-
-
-        let mut mem = HashMap::new();
+        let width = (cavern[0].len() * n - 1) as i32;
+        let height = (cavern.len() * n - 1) as i32;
         let end = Pos{x: width, y: height};
-        mem.insert(end, cavern[height as usize][width as usize]);
+
+        let mut large_cavern: Vec<Vec<i32>> = Vec::new();
+        for j in 0..cavern.len() * n {
+            let mut line: Vec<i32> = Vec::new();
+            for i in 0..n {
+                let z = (i + j / cavern.len()) as i32;
+                line.extend(cavern[j % cavern.len()].iter().map(|x| (x - 1 + z as i32) % 9 + 1).collect::<Vec<i32>>());
+            }
+            large_cavern.push(line);
+        }
 
         Cavern {
-            cavern: cavern, 
-            start: Pos{x: 0, y:0 },
+            cavern: large_cavern, 
             end: end,
-            left: Pos{x: -1, y: 0},
-            right: Pos{x: 1, y: 0},
-            up: Pos{x: 0, y: -1},
-            down: Pos{x: 0, y: 1},
-            mem: HashMap::new(),
         }
     }
 
-    pub fn print(&self) {
+    pub fn _print(&self) {
         for j in 0..self.end.y as usize {
             for i in 0..self.end.x as usize {
                 print!("{} ", self.cavern[j][i]);
@@ -124,15 +116,6 @@ impl Cavern {
     fn in_range(&self, pos: Pos) -> bool {
         !(pos.x < 0 || pos.y < 0 || pos.x > self.end.x || pos.y > self.end.y)
     }
-
-    fn value_of(&self, pos: Pos) -> Option<i32> {
-        if !self.in_range(pos) {
-            None
-        } else {
-            Some(self.cavern[pos.y as usize][pos.x as usize])
-        }
-    }
-
 
     fn dijsktra(&self) -> i32 {
         let mut dist = vec![vec![i32::MAX; self.cavern[0].len()]; self.cavern.len()];
@@ -158,43 +141,19 @@ impl Cavern {
             }
         }
 
-        for j in 0..dist.len() {
-            for i in 0..dist[0].len() {
-                print!("{:3?}", dist[j][i]);
-            }
-            println!();
-        }
+        // for j in 0..dist.len() {
+        //     for i in 0..dist[0].len() {
+        //         if dist[j][i] < 10000 {
+        //             print!("{:4?}", dist[j][i]);
+        //         } else {
+        //             print!("MOOP");
+        //         }
+
+        //     }
+        //     println!();
+        // }
 
         dist[self.end.y as usize][self.end.x as usize]
-    }
-
-    fn search_min(&self, pos: Pos, mut cost: i32, min_cost: &mut i32) {
-        //println!("search_min pos={} cost={} min_cost={}", pos, cost, min_cost);
-        if let Some(v) = self.value_of(pos) {
-            cost += v;
-        } else {
-            return;
-        }
-
-        // relax
-        if cost > 9 * (pos.x + 1) * (pos.y + 1) {
-            return;
-        }
-
-        if pos == self.end {
-            //println!("Found end with cost: {}", cost);
-            if cost < *min_cost {
-                *min_cost = cost;
-            }
-            return;
-        }
-
-        for d in vec![Pos{x:1, y:0}, Pos{x:0, y:1}] { //Is it possible that I would need to go round?
-            let next = pos + d;
-            if self.in_range(next) {
-                self.search_min(next, cost, min_cost);
-            }
-        }
     }
 
 }
@@ -202,13 +161,8 @@ impl Cavern {
 pub fn problem(file: String, n: usize) -> i128 {
     let lines: Vec<String> = fs::read_to_string(file).expect("Could not read file").split('\n').filter_map(|s | s.parse::<String>().ok()).collect();
 
-    let cavern = Cavern::new(lines);
-    cavern.print();
-
-    // let min_cost = &mut i32::MAX.clone();
-    // cavern.search_min(cavern.start, 0, min_cost);
-
-    // *min_cost as i128 - cavern.cavern[0][0] as i128
+    let cavern = Cavern::new(lines, n);
+    // cavern.print();
     cavern.dijsktra().into()
 }
 
@@ -220,18 +174,25 @@ mod tests {
 
     #[test]
     fn test_part1_example() {
-        let result = problem("data/day15.example".to_string(), 10);
+        let result = problem("data/day15.example".to_string(), 1);
         assert_eq!(40, result);
     }
 
     #[test]
     fn test_part1() {
-        let result = problem("data/day15.txt".to_string(), 10);
-        assert_eq!(2915, result);
+        let result = problem("data/day15.txt".to_string(), 1);
+        assert_eq!(609, result);
     }
 
     #[test]
-    fn test_part2() {
-        assert_eq!(3353146900153, problem("data/day15.txt".to_string(), 40));
+    fn test_part2_example() {
+        let result = problem("data/day15.example".to_string(), 5);
+        assert_eq!(315, result);
+    }
+
+    #[test]
+    fn test_part2_txt() {
+        let result = problem("data/day15.txt".to_string(), 5);
+        assert_eq!(2925, result);
     }
 }
