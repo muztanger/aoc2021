@@ -1,9 +1,10 @@
 use std::fs;
 use std::fmt;
+use std::cmp;
 
 struct Packet {
-    version: i32, //3 bits
-    type_id: i32, //3 bits: 4 = literal value, otherwise operator
+    version: i128, //3 bits
+    type_id: i128, //3 bits: 4 = literal value, otherwise operator
     number: i128, //5 * n bits: 1 bit (is last) and then 4 bits part of the number. TODO does this belong in every packet?
 
     packets: Vec<Packet>,
@@ -35,13 +36,13 @@ impl Packet {
     fn parse_packet(data: &String, index: &mut usize) -> Packet {
         let mut result = Packet{version:0, type_id:0, number:0, packets: Vec::new()};
 
-        result.version = i32::from_str_radix(&data[*index..*index+3], 2).unwrap();
+        result.version = i128::from_str_radix(&data[*index..*index+3], 2).unwrap();
         *index += 3;
-        println!("version: {}", result.version);
+        // println!("version: {}", result.version);
         
-        result.type_id = i32::from_str_radix(&data[*index..*index+3], 2).unwrap();
+        result.type_id = i128::from_str_radix(&data[*index..*index+3], 2).unwrap();
         *index += 3;
-        println!("type_id: {}", result.type_id);
+        // println!("type_id: {}", result.type_id);
         
         match result.type_id {
             4 => { // is literal value
@@ -63,13 +64,13 @@ impl Packet {
                 *index += 4;
 
                 result.number = value;
-                println!("Literal value: {}", result.number);
+                // println!("Literal value: {}", result.number);
             },
             _ => {
                 // is operator
                 let length_type_id = &data[*index..*index+1];
                 *index += 1;
-                println!("length_type_id={}", length_type_id);
+                // println!("length_type_id={}", length_type_id);
 
                 match length_type_id {
                     "0" => {
@@ -83,7 +84,7 @@ impl Packet {
                             result.packets.push(sub_packet);
                         }
 
-                        println!("total_length={}", total_length);
+                        // println!("total_length={}", total_length);
                     },
                     "1" => {
                         // the next 11 bits are a number that represents the number of sub-packets immediately contained by this packet.
@@ -106,14 +107,6 @@ impl Packet {
         result
     }
 
-    fn parse_data(data: &String) -> Packet {
-        let mut index = 0;
-
-        let result = Self::parse_packet(data, &mut index);
-        println!("result={}", result.to_string());
-        result
-    }
-
     fn parse(line: &String) -> Packet {
         let line_as_u8 = line.as_bytes().iter().filter_map(|b| {
             match b {
@@ -125,24 +118,90 @@ impl Packet {
         });
 
         let data = line_as_u8.fuse().map(|d| format!("{:04b}", d)).collect::<Vec<String>>().concat(); 
-        //println!("{}", data);
-        
-        Self::parse_data(&data)
+        let mut index = 0;
+        let result = Self::parse_packet(&data, &mut index);
+        println!("result={}", result.to_string());
+        result
     }
 
-    fn version_sum(&self) -> i32 {
+    fn version_sum(&self) -> i128 {
         let mut result = self.version;
         for p in &self.packets {
             result += p.version_sum();
         }
         result
     }
+
+    fn eval(&self) -> i128 {
+        match self.type_id {
+            0 => { // sum
+                let mut result = 0;
+                for p in &self.packets {
+                    result += p.eval();
+                }
+                result
+            },
+            1 => { // product
+                let mut result = 1;
+                for p in &self.packets {
+                    result *= p.eval();
+                }
+                result
+            },
+            2 => {
+                let mut result = i128::MAX;
+                for p in &self.packets {
+                    result = cmp::min(result, p.eval());
+                }
+                result
+            },
+            3 => {
+                let mut result = i128::MIN;
+                for p in &self.packets {
+                    result = cmp::max(result, p.eval());
+                }
+                result
+            },
+            4 => {
+                self.number
+            },
+            5 => {
+                assert_eq!(2, self.packets.len());
+                if self.packets[0].eval() > self.packets[1].eval() {
+                    1
+                } else {
+                    0
+                }
+            },
+            6 => {
+                assert_eq!(2, self.packets.len());
+                if self.packets[0].eval() < self.packets[1].eval() {
+                    1
+                } else {
+                    0
+                }
+            },
+            7 => {
+                assert_eq!(2, self.packets.len());
+                if self.packets[0].eval() == self.packets[1].eval() {
+                    1
+                } else {
+                    0
+                }
+            },
+            _ => {return -1;}
+        }
+    }
 }
 
-pub fn problem(file: String, n: usize) -> i32 {
+pub fn problem(file: String, n: usize) -> i128 {
     let lines: Vec<String> = fs::read_to_string(file).expect("Could not read file").split('\n').filter_map(|s | s.parse::<String>().ok()).collect();
     let decoder = Packet::parse(lines.first().unwrap());
-    decoder.version_sum()
+    if n == 1 {
+        decoder.version_sum()
+    } else {
+        decoder.eval()
+    }
 }
 
 #[cfg(debug_assertions)]
@@ -177,13 +236,19 @@ mod tests {
 
     #[test]
     fn test_part2_example1() {
-        let result = problem("data/day16.example1".to_string(), 5);
-        assert_eq!(315, result);
+        assert_eq!(3, problem("data/day16_2.example1".to_string(), 2));
+        assert_eq!(54, problem("data/day16_2.example2".to_string(), 2));
+        assert_eq!(7, problem("data/day16_2.example3".to_string(), 2));
+        assert_eq!(9, problem("data/day16_2.example4".to_string(), 2));
+        assert_eq!(1, problem("data/day16_2.example5".to_string(), 2));
+        assert_eq!(0, problem("data/day16_2.example6".to_string(), 2));
+        assert_eq!(0, problem("data/day16_2.example7".to_string(), 2));
+        assert_eq!(1, problem("data/day16_2.example8".to_string(), 2));
     }
 
     #[test]
     fn test_part2_txt() {
-        let result = problem("data/day16.txt".to_string(), 5);
-        assert_eq!(2925, result);
+        let result = problem("data/day16.txt".to_string(), 2);
+        assert_eq!(539051801941, result);
     }
 }
